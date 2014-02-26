@@ -42,6 +42,8 @@ public class GameScreen extends AbstractScreen {
 	private int marcadorDePuntos; // Sirve para contar los puntos al destruir aliens.
 	private float velocidadAliens; // La velocidad con la que se moveran los aliens. Aumentará a medida que se avance en las distintas fases.
 	private Random aleatorio; // Permite usar números aleatorios
+
+	private int vidas; // Contador de vidas del jugador
 	
 	public GameScreen(spaceInvaders invaders) {
 		super(invaders);
@@ -70,6 +72,7 @@ public class GameScreen extends AbstractScreen {
 		aleatorio = new Random();
 		gameOver = false;
 		marcadorDePuntos = 0; // Los puntos al empezar el juego.
+		vidas = 3;
 	}
 	
 	private void crearAliens() { // Crea los aliens.
@@ -103,7 +106,7 @@ public class GameScreen extends AbstractScreen {
 	
 	private void posicionarAliens(ArrayList<Alien> aliens, Texture texturaAlien, float altura) { // Método que sirve para ubicar los aliens en la pantalla
 		float distancia = DISTANCIA; // Distancia a la que tiene que estar cada alien en la pantalla.
-		float limiteDerecha = MARGEN_DERECHO - ((texturaAlien.getHeight() + 5) * MAXIMO_ALIENS_FILA); // Sirve para establecer el limite de cada alien por la derecha.
+		float limiteDerecha = MARGEN_DERECHO - ((texturaAlien.getWidth() + 5) * MAXIMO_ALIENS_FILA); // Sirve para establecer el limite de cada alien por la derecha.
 		float limiteIzquierda = MARGEN_IZQUIERDO; // Sirve para establecer el limite de cada alien por la izquierda.
 		for(int i = 0; i < MAXIMO_ALIENS_FILA ; i++) {
 			aliens.add(new Alien(texturaAlien, new Vector2(distancia, altura), limiteIzquierda, limiteDerecha, velocidadAliens));
@@ -114,7 +117,7 @@ public class GameScreen extends AbstractScreen {
 	}
 	
 	private float reducirAlturaAliens(Texture texturaAlien, float altura) { // Descender la altura de la nueva fila de aliens
-		return altura - texturaAlien.getWidth() - 5;
+		return altura - texturaAlien.getHeight() - 5;
 	}
 
 	@Override
@@ -160,6 +163,10 @@ public class GameScreen extends AbstractScreen {
 		// Pinta los puntos que se tienen en la pantalla.
 		invaders.getFont().draw(batch, Integer.toString(marcadorDePuntos), 10, Gdx.graphics.getHeight() - 10);
 		
+		// Pinta las vidas restantes
+		for (int i = 0; i < vidas; i++)
+			batch.draw(invaders.getManager().get("data/ship.png", Texture.class), 10 + i*25, 10, 20, 20);
+		
 		batch.end(); // Terminamos el renderizado.
 		
 		comprobarFinalDelJuego();
@@ -190,17 +197,21 @@ public class GameScreen extends AbstractScreen {
 			actualizarDisparoAlien = true; // Esta variable sirve para no hacer un disparo hasta que se termine el actual y para actualizar los parametros del mismo.
 		}
 		//Hacemos que se actualizen los parametros del disparo en la pantalla si hay efectuado uno.
-		if(actualizarDisparoAlien) {
+		//if(actualizarDisparoAlien) { // aqu� siempre llega a true
 			disparoAlien.update();
 			if(nave.tocadoPorDisparo(disparoAlien)) { // Si el disparo toca la nave, pues muere...
-				disparoAlien.naveMuerta();
-				gameOver = true;
+				vidas--;
+				disparoAlien.naveGolpeada();
+				
+				if (vidas == 0)
+					gameOver = true;
 			}
 			else if(disparoAlien.getPosicion().y < 0) { // Cuando llegue al final de la pantalla
 				actualizarDisparoAlien = false;
 			}
-		}
+		//}
 	}
+	
 	
 	private ArrayList<Alien> filaDeDisparo() { // Permite comprobar la fila mas en el sur de la pantalla para disparar. Dispara por fila siempre y cuando existan aliens en la misma
 		if(aliensTipo4.isEmpty()) {
@@ -214,6 +225,7 @@ public class GameScreen extends AbstractScreen {
 		}
 		else return aliensTipo4;
 	}
+	
 	
 	private void aliensUpdate(ArrayList<Alien> aliens) { // Esta función permite controlar los eventos que puedan pasarles a los aliens
 		for(int i = 0; i < aliens.size(); i++) {

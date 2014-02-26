@@ -37,7 +37,6 @@ public class spaceInvaders extends Game {
 		batch = new SpriteBatch(); // Es recomendable solo usar un SpriteBatch en todo el juego
 		this.font = new BitmapFont(Gdx.files.internal("data/arial.fnt"), Gdx.files.internal("data/arial.png"), false);
 		
-		
 		preferencias = Gdx.app.getPreferences("-_PreferencesInvaders-Data-_"); // Obtenemos los datos del fichero, o si no está creado, se crea automaticamente
 		
 		// Pantallas de carga del juego
